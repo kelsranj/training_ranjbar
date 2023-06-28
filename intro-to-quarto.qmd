@@ -1,0 +1,19 @@
+---
+title: "Introduction to Quarto"
+format: html
+---
+
+| Col1 | Col2 | Col3 |
+|------|------|------|
+| 1    | 3    | 5    |
+| 7    | 9    | 11   |
+|      |      |      |
+
+## Code chunks
+
+ctrl+alt+i --- new code chunk
+```{r}
+
+```
+
+

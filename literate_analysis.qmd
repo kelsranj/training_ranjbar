@@ -1,0 +1,73 @@
+---
+title: "Literate Analysis"
+author: "Kelsey Ranjbar"
+format: html
+---
+
+## Introduction
+
+### About this data
+
+This [data set](https://arcticdata.io/catalog/view/doi:10.18739/A25T3FZ8X) contains North Pole Environmental Observatory Bottle Chemistry data. This data set includes diverse measurements of seawater chemistry along with supporting conductivity, temperature, and depth (CTD) data from the Arctic Ocean near the North Pole. Measurements were taken from sea ice platforms each April or May from 2000-2014. More information about the project is available at the [project web site](http://psc.apl.washington.edu/northpole).
+
+### Setup
+```{r}
+library(readr)
+```
+
+### Read data
+```{r}
+#| warning: false
+#| message: false
+
+# quarto autofill file name shortcut -- press tab after slash in file path
+bg_chem <- read_csv("data/BGchem2008data.csv")
+
+```
+
+
+Exploring data
+```{r}
+#| eval: false
+#| echo: false
+
+
+colnames(bg_chem)
+
+str(bg_chem)
+
+head(bg_chem)
+
+summary(bg_chem)
+
+unique(bg_chem$Date)
+
+```
+
+
+
+## Analysis
+
+### Calculate summary statistics
+```{r}
+nitrate <- mean(bg_chem$NO3)
+nitrite <- mean(bg_chem$NO2)
+amm <- mean(bg_chem$NH4)
+phos <- mean(bg_chem$P)
+
+```
+
+### Calculate mean Redfield ratio
+```{r}
+ratio <- (nitrate + nitrite + amm)/phos
+```
+
+### Plot Redfield ratio
+```{r}
+plot(bg_chem$P, bg_chem$NO3 + bg_chem$NO2 + bg_chem$NH4)
+```
+
+## Conclusion
+
+The Redfield ratio for this data is approximately `r round(ratio)`.
+
