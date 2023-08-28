@@ -58,3 +58,168 @@ daily_visit <- visits_long %>%
   summarise(daily_visits = sum(quantity))
 ```
 
+## Customizing our plot
+```{r}
+ggplot(daily_visit,
+       aes(x = restore_loc, y = daily_visits)) +
+  geom_col(fill = "blue")
+```
+
+```{r}
+ggplot(daily_visit,
+       aes(x = restore_loc, y = daily_visits, fill = visitor_type)) + 
+  geom_col() +
+  labs(x = "Restoration Location",
+       y = "Number of Visits",
+       fill = "Type of Visitors",
+       title = "Total Number of Visits to Delta Restoration Sites by Visitor Type",
+       subtitle = "Sum of all visits during study period") + 
+  coord_flip() +
+  theme_bw()
+```
+
+## Using `theme()` function to further customize our plot
+```{r}
+ggplot(daily_visit,
+       aes(x = restore_loc, y = daily_visits, fill = visitor_type)) + 
+  geom_col() +
+  labs(x = "Restoration Location",
+       y = "Number of Visits",
+       fill = "Type of Visitors",
+       title = "Total Number of Visits to Delta Restoration Sites by Visitor Type",
+       subtitle = "Sum of all visits during study period") + 
+  coord_flip() +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        axis.ticks.y = element_blank())
+```
+
+## Saving theme into an object (return to this, didn't work for me)
+```{r}
+#my_theme <- theme_bw(base_size = 16) +
+#  theme(legend.position = "bottom",
+#        axis.ticks.y = element_blank())
+```
+
+```{r}
+ggplot(daily_visit,
+       aes(x = restore_loc, y = daily_visits, fill = visitor_type)) + 
+  geom_col() +
+  labs(x = "Restoration Location",
+       y = "Number of Visits",
+       fill = "Type of Visitors",
+       title = "Total Number of Visits to Delta Restoration Sites by Visitor Type",
+       subtitle = "Sum of all visits during study period") + 
+  coord_flip() #+
+#  my_theme()
+```
+
+```{r}
+ggplot(daily_visit,
+       aes(x = restore_loc, y = daily_visits, fill = visitor_type)) + 
+  geom_col() +
+  labs(x = "Restoration Location",
+       y = "Number of Visits",
+       fill = "Type of Visitors",
+       title = "Total Number of Visits to Delta Restoration Sites by Visitor Type",
+       subtitle = "Sum of all visits during study period") + 
+  coord_flip() +
+  theme_bw() +
+  scale_y_continuous(breaks = seq(0, 120, 20))
+```
+
+## adding sorting variable
+```{r}
+daily_visits_total <- daily_visit %>%
+  group_by(restore_loc) %>%
+  mutate(n = sum(daily_visits)) %>%
+  ungroup()
+```
+
+```{r}
+ggplot(daily_visits_total,
+       aes(x = fct_reorder(restore_loc, n), y = daily_visits, fill = visitor_type)) + 
+  geom_col() +
+  labs(x = "Restoration Location",
+       y = "Number of Visits",
+       fill = "Type of Visitors",
+       title = "Total Number of Visits to Delta Restoration Sites by Visitor Type",
+       subtitle = "Sum of all visits during study period") + 
+  coord_flip() +
+  theme_bw() +
+  scale_y_continuous(breaks = seq(0, 120, 20)) +
+  scale_fill_viridis_d()
+```
+
+```{r}
+ggsave("figures/visits_restore_site_delta.jpg", width = 12, height = 6, units = "in")
+```
+
+## Creating multiple plots with `facet_wrap()`
+```{r}
+facet_plot <- ggplot(data = daily_visits_total,
+       aes(x = visitor_type, y = daily_visits,
+           fill = visitor_type))+
+    geom_col()+
+    theme_bw()+
+    facet_wrap(~restore_loc,
+               scales = "free_y",
+               ncol = 5,
+               nrow = 2)+
+    scale_fill_viridis_d()+
+    labs(x = "Type of visitor",
+         y = "Number of Visits",
+         title = "Total Number of Visits to Delta Restoration Areas",
+         subtitle = "Sum of all visits during study period")+
+    theme_bw()+
+    theme(legend.position = "bottom",
+          axis.ticks.x = element_blank(),
+          axis.text.x = element_blank())
+
+facet_plot
+```
+
+## Interactive tables with `DT`
+```{r}
+locations <- visits_long %>%
+  distinct(restore_loc, .keep_all = T) %>%
+  select(restore_loc, latitude, longitude)
+```
+
+```{r}
+datatable(locations)
+```
+
+## Interactive maps with `leaflet`
+```{r}
+leaflet(locations) %>%
+    addTiles() %>%
+    addMarkers(
+        lng = ~ longitude,
+        lat = ~ latitude,
+        popup = ~ restore_loc
+    )
+```
+
+```{r}
+leaflet(locations) %>%
+    addWMSTiles(
+        "https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer",
+        layers = "0",
+        options = WMSTileOptions(format = "image/png", transparent = TRUE)) %>%
+    addCircleMarkers(
+        lng = ~ longitude,
+        lat = ~ latitude,
+        popup = ~ restore_loc,
+        radius = 5,
+        # set fill properties
+        fillColor = "salmon",
+        fillOpacity = 1,
+        # set stroke properties
+        stroke = T,
+        weight = 0.5,
+        color = "white",
+        opacity = 1)
+```
+
+
