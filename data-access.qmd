@@ -1,0 +1,59 @@
+---
+title: "data-access"
+format: html
+---
+
+# Reproducible Data Access
+
+```{r}
+library(readr)
+library(pins)
+```
+
+## Start by downloading from the web
+
+Dataset: https://bit.ly/iep-dataset
+```{r}
+delta_sites_url <- 'https://cn.dataone.org/cn/v2/resolve/https%3A%2F%2Fpasta.lternet.edu%2Fpackage%2Fdata%2Feml%2Fedi%2F233%2F2%2F6a82451e84be1fe82c9821f30ffc2d7d'
+
+delta_sites <- readr::read_csv(delta_sites_url, show_col_types = FALSE)
+head(delta_sites)
+
+```
+
+Alternatively, use pins to cache a local copy of the file:
+
+```{r}
+delta_sites_pin <- pins::pin(delta_sites_url)
+delta_sites <- readr::read_csv(delta_sites_pin, show_col_types = FALSE)
+head(delta_sites)
+```
+
+## Content identifiers
+
+```{r}
+library(contentid)
+delta_catch_url <- 'https://cn.dataone.org/cn/v2/resolve/https%3A%2F%2Fpasta.lternet.edu%2Fpackage%2Fdata%2Feml%2Fedi%2F233%2F2%2F015e494911cf35c90089ced5a3127334'
+
+delta_catch_id <- store(delta_catch_url)
+delta_catch_id
+```
+
+```{r}
+delta_catch_file <- contentid::resolve(delta_catch_id, store=TRUE)
+delta_catch <- readr::read_csv(delta_catch_file, show_col_types = FALSE)
+head(delta_catch)
+```
+
+## Finding where things are stored
+
+```{r}
+vostok_co2 <- system.file("extdata", "vostok.icecore.co2", package="contentid")
+vostok_id <- store(vostok_co2)
+vostok_id
+```
+
+```{r}
+contentid::sources(vostok_id)
+```
+
