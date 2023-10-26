@@ -6,6 +6,8 @@ editor_options:
   chunk_output_type: console
 ---
 
+# Functions
+
 added description on main branch
 
 ```{r setup, include=FALSE}
