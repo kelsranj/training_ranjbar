@@ -1,0 +1,126 @@
+---
+title: "Intro to Text Data"
+format: html
+---
+
+```{r}
+library(gutenbergr) # access public domain texts from Project Gutenberg
+library(tidytext) # text mining using tidy tools
+library(dplyr) # wrangle data
+library(ggplot2) # plot data
+```
+
+## Exercise: Tidy Text Workflow
+
+### Question 1
+
+```{r}
+gutenberg_works(title == "Dracula") # dracula text
+
+dracula_corp <- gutenberg_download(345)
+```
+
+### Question 2
+
+```{r}
+dracula_tidy <- unnest_tokens(dracula_corp, output = "word", input = "text")
+```
+
+### Question 3
+
+```{r}
+dracula_stop_rm <- dracula_tidy %>% anti_join(stop_words)
+```
+### Question 4
+
+```{r}
+dracula_top_10 <- dracula_stop_rm %>%
+  count(word) %>%
+  slice_max(n = 10, order_by = n)
+```
+
+### Question 5
+
+```{r}
+ggplot(dracula_top_10, aes(n, reorder(word, n))) +
+  geom_col() +
+  labs(title = "Top 10 Words in Dracula",
+       x = "Count",
+       y = "Token") +
+  theme_bw()
+```
+
+## Exercise: Explore Unstructured Text Data from a PDF
+
+### Load Libraries
+
+```{r}
+library(tidytext) # tidy text tools
+library(quanteda) # create a corpus
+library(pdftools) # read in data
+library(dplyr) # wrangle data
+library(stringr) # string manipulation
+library(ggplot2) # plots
+library(wordcloud)
+```
+
+### Read in Chapter 3 PDF
+
+```{r}
+path_df <- "data/dsc_ch03.pdf"
+
+dp_ch3 <- pdftools::pdf_text(path_df)
+
+class(dp_ch3)
+  
+```
+
+### Turn into corpus
+
+```{r}
+corpus_dp_ch3 <- quanteda::corpus(dp_ch3)
+```
+
+### Make corpus tidy
+
+```{r}
+tidy_dp_ch3 <- tidytext::tidy(corpus_dp_ch3)
+```
+
+### Question 1
+
+```{r}
+tidy_dp_ch3 <- unnest_tokens(tidy_dp_ch3, output = "word", input = "text")
+
+```
+
+### Question 2
+
+```{r}
+tidy_dp_ch3 <- tidy_dp_ch3 %>% dplyr::anti_join(stop_words, by = "word")
+```
+
+### Question 3
+
+```{r}
+count_dp_ch3 <- tidy_dp_ch3 %>%
+    count(word) %>% 
+    slice_max(n = 10, order_by = n)
+
+```
+
+### Question 4
+
+```{r}
+ggplot(count_dp_ch3, aes(n, reorder(word, n))) +
+  geom_col(fill = 'chartreuse3') +
+  labs(title = "Top 10 Most Frequently Occurring Words in Chapter 3 of the Delta Plan",
+       x = "Count",
+       y = "Word") +
+  theme_bw()
+```
+
+
+
+
+

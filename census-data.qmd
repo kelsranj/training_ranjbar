@@ -1,0 +1,75 @@
+---
+title: "Census Data"
+format: html
+---
+
+## load libraries
+
+```{r}
+library(tidycensus)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(stringr)
+library(scales)
+```
+
+## read in API
+
+```{r}
+#census_api_key("fe91cb6fa2ad3b2161eec982e9adae92cf3862af", install = T)
+```
+
+## Exercise 1
+
+```{r}
+delta_tract_hw <- get_decennial(
+  geography = "tract",
+  state = "CA",
+  county = c("Alameda", "Contra Costa", "Sacramento", "San Joaquin", "Solano", "Yolo"),
+  variables = c("P2_002N", "P2_005N"),
+  summary_var = "P2_001N",
+  year = 2020)
+
+
+delta_tract_hw <- delta_tract_hw %>% 
+  mutate(pct_hw = value/summary_value) %>%
+  tidyr::separate(NAME, c("Census Tract", "County", "State"),sep = ", ")
+
+ggplot(delta_tract_hw, 
+       aes(x = pct_hw, fill = County)) + 
+  geom_density(alpha = 0.3)+
+    facet_wrap(~variable)+
+    theme_light()
+
+```
+
+## Exercise 2
+
+```{r}
+vars <- load_variables(2021, "acs5")
+
+median_rent_5yr <- get_acs(
+  geography = "county",
+  variables = "B25031_001",
+  state = "CA",
+  year = 2021,
+  survey = "acs5")
+
+ggplot(median_rent_5yr, aes(x = estimate, y = reorder(NAME, estimate))) +
+  geom_point() +
+  geom_errorbar(aes(xmin = estimate - moe, xmax = estimate + moe),
+                width = 0.5, linewidth = 0.5) +
+  labs(y = "County",
+       x = "Median Rent 2021")
+  scale_x_continuous(labels = label_dollar()) +
+  scale_y_discrete(labels = function(x) str_remove(x, " County, California|, California"))
+
+
+
+
+```
+
+
+
+

@@ -1,0 +1,109 @@
+---
+title: "Survey Workflow"
+format: html
+---
+
+## Set up
+```{r}
+#| warning: false
+library(qualtRics)
+library(tidyr)
+library(knitr)
+library(ggplot2)
+library(kableExtra)
+library(dplyr)
+```
+
+- Connect to Qualtrics API
+
+```{r}
+#qualtrics_api_credentials(api_key = "KEY HERE~check email", base_url = "ucsb.co1.qualtrics.com", install = T)
+
+```
+## Get all surveys
+```{r}
+surveys <- all_surveys()
+```
+
+## Saving survey id
+
+```{r}
+i <- which(surveys$name == "Survey for Data Science Training")
+
+id <- surveys$id[i]
+```
+
+## List of questions
+
+```{r}
+questions <- survey_questions(id)
+
+kable(questions) %>%
+  kable_styling()
+```
+
+## Getting survey results
+
+```{r}
+survey_results <- fetch_survey(id)
+```
+
+## Cleaning Results
+### Question 2
+
+```{r}
+q2 <- survey_results %>%
+  select(Q2) %>%
+  group_by(Q2) %>%
+  summarise(n = n())
+
+kable(q2, col.names = c("How long have you been programming?", 
+                        "Number of Responses")) %>%
+  kable_styling()
+```
+
+### Question 3
+
+```{r}
+q3 <- survey_results %>%
+  select(Q3) %>%
+  group_by(Q3) %>%
+  summarise(n = n())
+
+ggplot(q3, aes(x = Q3, y = n)) +
+  geom_col() +
+  labs(x = "What language do you currently use most frequently?") +
+  theme_bw()
+
+
+```
+Free text
+
+```{r}
+q3_text <- survey_results %>%
+  select(Q3_7_TEXT) %>%
+  drop_na()
+
+kable(q3_text, col.names = "Other Responses to 'What language do you currently use most frequently?'") %>%
+  kable_styling()
+
+```
+
+
+### Question 4
+
+```{r}
+q4 <- survey_results %>%
+  select(Q4) %>%
+  rename("What data science tool or language are you most excited to learn next?" = Q4) %>%
+  drop_na()
+
+kable(q4) %>%
+  kable_styling()
+
+```
+
+
+
+
+
